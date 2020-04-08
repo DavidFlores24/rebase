@@ -38,12 +38,16 @@ fi
 
 if [[ "$(echo "$pr_resp" | jq -r .rebaseable)" != "true" ]]; then
 	echo "GitHub doesn't think that the PR is rebaseable!"
+	curl -X POST -s -H"${AUTH_HEADER}" -H "${API_HEADER} "${URI}/repos/$GITHUB_REPOSITORY/issues/${PR_NUMBER}/comments \
+	-d '{"body": "GitHub does not think that the PR is rebaseable! 😡"}'
 	exit 1
 fi
 
 if [[ -z "$BASE_BRANCH" ]]; then
 	echo "Cannot get base branch information for PR #$PR_NUMBER!"
 	echo "API response: $pr_resp"
+	curl -X POST -s -H"${AUTH_HEADER}" -H "${API_HEADER} "${URI}/repos/$GITHUB_REPOSITORY/issues/${PR_NUMBER}/comments \
+	-d '{"body": "Cannot get base branch information for this PR! 😿"}'
 	exit 1
 fi
 
@@ -73,3 +77,6 @@ git rebase origin/$BASE_BRANCH
 
 # push back
 git push --force-with-lease fork $HEAD_BRANCH
+
+curl -X POST -s -H"${AUTH_HEADER}" -H "${API_HEADER} "${URI}/repos/$GITHUB_REPOSITORY/issues/${PR_NUMBER}/comments \
+	-d '{"body": "Rebased succesfully! 🤘🏽"}'
